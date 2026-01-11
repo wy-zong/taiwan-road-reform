@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="台灣交通改革協作平台 - 透過群眾協作改善道路設計，打造更安全的交通環境">
+    <title>台灣交通改革協作平台</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <span class="logo-icon">🚗</span>
+                <h1>台灣交通改革協作平台</h1>
+            </div>
+            <nav class="nav">
+                <a href="https://github.com/wy-zong/taiwan-road-reform/issues/new/choose" 
+                   class="btn btn-primary" target="_blank">
+                    ➕ 回報問題
+                </a>
+                <a href="https://github.com/wy-zong/taiwan-road-reform" 
+                   class="btn btn-secondary" target="_blank">
+                    GitHub
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <!-- Stats Panel -->
+            <section class="panel stats-panel">
+                <h2>📊 統計概覽</h2>
+                <div class="stats-grid">
+                    <div class="stat-item stat-total">
+                        <span class="stat-value" id="stat-total">-</span>
+                        <span class="stat-label">總計</span>
+                    </div>
+                    <div class="stat-item stat-pending">
+                        <span class="stat-value" id="stat-pending">-</span>
+                        <span class="stat-label">待確認</span>
+                    </div>
+                    <div class="stat-item stat-confirmed">
+                        <span class="stat-value" id="stat-confirmed">-</span>
+                        <span class="stat-label">已確認</span>
+                    </div>
+                    <div class="stat-item stat-petitioned">
+                        <span class="stat-value" id="stat-petitioned">-</span>
+                        <span class="stat-label">已陳情</span>
+                    </div>
+                    <div class="stat-item stat-processing">
+                        <span class="stat-value" id="stat-processing">-</span>
+                        <span class="stat-label">處理中</span>
+                    </div>
+                    <div class="stat-item stat-resolved">
+                        <span class="stat-value" id="stat-resolved">-</span>
+                        <span class="stat-label">已解決</span>
+                    </div>
+                </div>
+                <p class="last-updated">最後更新：<span id="last-updated">-</span></p>
+            </section>
+
+            <!-- Filter Panel -->
+            <section class="panel filter-panel">
+                <h2>🔍 篩選</h2>
+                
+                <div class="filter-group">
+                    <label for="filter-city">縣市</label>
+                    <select id="filter-city">
+                        <option value="">全部縣市</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="filter-status">狀態</label>
+                    <select id="filter-status">
+                        <option value="">全部狀態</option>
+                        <option value="待確認">待確認</option>
+                        <option value="已確認">已確認</option>
+                        <option value="已陳情">已陳情</option>
+                        <option value="處理中">處理中</option>
+                        <option value="已解決">已解決</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="filter-type">類型</label>
+                    <select id="filter-type">
+                        <option value="">全部類型</option>
+                        <option value="人行道">人行道</option>
+                        <option value="行穿線">行穿線</option>
+                        <option value="標線標誌">標線標誌</option>
+                        <option value="號誌">號誌</option>
+                        <option value="自行車道">自行車道</option>
+                        <option value="無障礙">無障礙</option>
+                        <option value="其他">其他</option>
+                    </select>
+                </div>
+                
+                <button class="btn btn-reset" id="reset-filters">重置篩選</button>
+            </section>
+        </aside>
+
+        <!-- Map Container -->
+        <div class="map-container">
+            <div id="map"></div>
+            
+            <!-- Map Legend -->
+            <div class="map-legend">
+                <h3>圖例</h3>
+                <div class="legend-item">
+                    <span class="legend-marker pending"></span> 待確認
+                </div>
+                <div class="legend-item">
+                    <span class="legend-marker confirmed"></span> 已確認
+                </div>
+                <div class="legend-item">
+                    <span class="legend-marker petitioned"></span> 已陳情
+                </div>
+                <div class="legend-item">
+                    <span class="legend-marker processing"></span> 處理中
+                </div>
+                <div class="legend-item">
+                    <span class="legend-marker resolved"></span> 已解決
+                </div>
+            </div>
+        </div>
+
+        <!-- Issues List -->
+        <aside class="sidebar sidebar-right">
+            <section class="panel issues-panel">
+                <h2>📋 問題列表</h2>
+                <p class="issues-count">顯示 <span id="issues-count">0</span> 筆</p>
+                <div class="issues-list" id="issues-list">
+                    <p class="no-issues">載入中...</p>
+                </div>
+            </section>
+        </aside>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>
+            Made with ❤️ by Taiwan Civic Tech Community |
+            <a href="https://github.com/wy-zong/taiwan-road-reform" target="_blank">GitHub</a> |
+            <a href="https://creativecommons.org/licenses/by/4.0/deed.zh_TW" target="_blank">CC BY 4.0</a>
+        </p>
+    </footer>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+name: 自動標籤
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  auto-label:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    
+    steps:
+      - name: 解析 Issue 內容並加上縣市標籤
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issueBody = context.payload.issue.body || '';
+            
+            // 縣市對應表
+            const cities = [
+              '台北市', '新北市', '桃園市', '台中市', '台南市', '高雄市',
+              '基隆市', '新竹市', '新竹縣', '苗栗縣', '彰化縣', '南投縣',
+              '雲林縣', '嘉義市', '嘉義縣', '屏東縣', '宜蘭縣', '花蓮縣',
+              '台東縣', '澎湖縣', '金門縣', '連江縣'
+            ];
+            
+            // 問題類型對應表
+            const issueTypes = {
+              '人行道缺失/破損': '類型/人行道',
+              '行穿線設計不良': '類型/行穿線',
+              '標線/標誌不清': '類型/標線標誌',
+              '號誌問題': '類型/號誌',
+              '自行車道問題': '類型/自行車道',
+              '無障礙設施不足': '類型/無障礙',
+              '其他': '類型/其他'
+            };
+            
+            const labelsToAdd = [];
+            
+            // 檢查縣市
+            for (const city of cities) {
+              if (issueBody.includes(city)) {
+                labelsToAdd.push(`縣市/${city}`);
+                break; // 只加一個縣市標籤
+              }
+            }
+            
+            // 檢查問題類型
+            for (const [type, label] of Object.entries(issueTypes)) {
+              if (issueBody.includes(type)) {
+                labelsToAdd.push(label);
+                break;
+              }
+            }
+            
+            // 加上標籤
+            if (labelsToAdd.length > 0) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                labels: labelsToAdd
+              });
+              
+              console.log(`Added labels: ${labelsToAdd.join(', ')}`);
+            }

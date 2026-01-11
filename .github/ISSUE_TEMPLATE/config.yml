@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 一般討論
+    url: https://github.com/wy-zong/taiwan-road-reform/discussions
+    about: 如果不是回報特定道路問題，歡迎到討論區聊聊
+  - name: 📖 貢獻指南
+    url: https://github.com/wy-zong/taiwan-road-reform/blob/main/CONTRIBUTING.md
+    about: 不確定如何參與？先看看貢獻指南

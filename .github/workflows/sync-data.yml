@@ -1,0 +1,126 @@
+name: 同步資料
+
+on:
+  issues:
+    types: [opened, edited, closed, reopened, labeled, unlabeled]
+  schedule:
+    - cron: '0 */6 * * *'  # 每 6 小時同步一次
+  workflow_dispatch:  # 允許手動觸發
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: read
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: 產生 issues.json
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            // 取得所有 Issues
+            const issues = await github.paginate(github.rest.issues.listForRepo, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'all',
+              per_page: 100
+            });
+            
+            // 過濾掉 PR（GitHub 會把 PR 也當成 Issue）
+            const realIssues = issues.filter(issue => !issue.pull_request);
+            
+            // 解析 Issue 資料
+            const parsedIssues = realIssues.map(issue => {
+              const body = issue.body || '';
+              const labels = issue.labels.map(l => l.name);
+              
+              // 提取縣市
+              let city = '';
+              const cityLabel = labels.find(l => l.startsWith('縣市/'));
+              if (cityLabel) {
+                city = cityLabel.replace('縣市/', '');
+              }
+              
+              // 提取問題類型
+              let type = '';
+              const typeLabel = labels.find(l => l.startsWith('類型/'));
+              if (typeLabel) {
+                type = typeLabel.replace('類型/', '');
+              }
+              
+              // 提取狀態
+              let status = '待確認';
+              const statusLabel = labels.find(l => l.startsWith('狀態/'));
+              if (statusLabel) {
+                status = statusLabel.replace('狀態/', '');
+              }
+              
+              // 提取地點（從 Issue body 解析）
+              let location = '';
+              const locationMatch = body.match(/📍 地點\s*\n\s*(.+)/);
+              if (locationMatch) {
+                location = locationMatch[1].trim();
+              }
+              
+              return {
+                id: issue.number,
+                title: issue.title,
+                url: issue.html_url,
+                location: location,
+                city: city,
+                type: type,
+                status: status,
+                labels: labels,
+                createdAt: issue.created_at,
+                updatedAt: issue.updated_at,
+                closedAt: issue.closed_at
+              };
+            });
+            
+            // 計算統計
+            const stats = {
+              total: parsedIssues.length,
+              byStatus: {},
+              byCity: {},
+              byType: {}
+            };
+            
+            parsedIssues.forEach(issue => {
+              // 狀態統計
+              stats.byStatus[issue.status] = (stats.byStatus[issue.status] || 0) + 1;
+              
+              // 縣市統計
+              if (issue.city) {
+                stats.byCity[issue.city] = (stats.byCity[issue.city] || 0) + 1;
+              }
+              
+              // 類型統計
+              if (issue.type) {
+                stats.byType[issue.type] = (stats.byType[issue.type] || 0) + 1;
+              }
+            });
+            
+            // 組合最終資料
+            const data = {
+              lastUpdated: new Date().toISOString(),
+              stats: stats,
+              issues: parsedIssues
+            };
+            
+            // 寫入檔案
+            fs.writeFileSync('data/issues.json', JSON.stringify(data, null, 2));
+            console.log(`Generated issues.json with ${parsedIssues.length} issues`);
+      
+      - name: Commit 變更
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add data/issues.json
+          git diff --staged --quiet || git commit -m "chore: 更新 issues.json [skip ci]"
+          git push
