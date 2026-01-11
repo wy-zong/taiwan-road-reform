@@ -1,0 +1,18 @@
+# Git 忽略檔案
+
+# 本地管理文件（不上傳 GitHub）
+LOCAL_*.md
+
+# 系統檔案
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# 依賴
+node_modules/
+
+# 日誌
+*.log
