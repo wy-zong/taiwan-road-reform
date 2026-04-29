@@ -186,7 +186,7 @@ function renderIssues() {
     );
     
     container.innerHTML = sorted.map(issue => `
-        <div class="issue-card" onclick="focusIssue(${issue.id})">
+        <div class="issue-card" onclick="focusIssueOnMap(${issue.id})">
             <div class="issue-card-header">
                 <span class="issue-card-title">${escapeHtml(issue.title)}</span>
                 <span class="issue-card-id">#${issue.id}</span>
@@ -195,6 +195,7 @@ function renderIssues() {
                 <span class="issue-tag status status-${getStatusClass(issue.status)}">${issue.status}</span>
                 ${issue.city ? `<span class="issue-tag city">${issue.city}</span>` : ''}
             </div>
+            <a href="${issue.url}" target="_blank" rel="noopener noreferrer" class="popup-link" onclick="event.preventDefault(); event.stopPropagation(); openIssueUrl(${issue.id});">查看 GitHub</a>
         </div>
     `).join('');
 }
@@ -241,7 +242,7 @@ function renderMarkers() {
                     ${issue.city ? `<span class="issue-tag city">${issue.city}</span>` : ''}
                     ${issue.type ? `<span class="issue-tag city">${issue.type}</span>` : ''}
                 </div>
-                <a href="${issue.url}" target="_blank" class="popup-link">在 GitHub 查看 →</a>
+                <a href="${issue.url}" target="_blank" rel="noopener noreferrer" class="popup-link">在 GitHub 查看 →</a>
             </div>
         `;
         
@@ -253,17 +254,18 @@ function renderMarkers() {
 }
 
 // ===== 聚焦到特定 Issue =====
-function focusIssue(issueId) {
+function focusIssueOnMap(issueId) {
     const marker = markers.find(m => m.issueId === issueId);
     if (marker) {
         map.setView(marker.getLatLng(), 14);
         marker.openPopup();
     }
-    
-    // 也在新分頁開啟 GitHub Issue
+}
+
+function openIssueUrl(issueId) {
     const issue = allIssues.find(i => i.id === issueId);
     if (issue && issue.url) {
-        window.open(issue.url, '_blank');
+        window.open(issue.url, '_blank', 'noopener,noreferrer');
     }
 }
 
