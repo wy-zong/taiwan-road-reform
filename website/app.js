@@ -49,6 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initMap();
     loadData();
     setupFilters();
+    setupIssueListEvents();
 });
 
 // ===== 地圖初始化 =====
@@ -151,6 +152,29 @@ function setupFilters() {
     });
 }
 
+// ===== 設定問題列表事件（事件委派） =====
+function setupIssueListEvents() {
+    const issuesList = document.getElementById('issues-list');
+    if (!issuesList) return;
+
+    issuesList.addEventListener('click', (event) => {
+        const externalLink = event.target.closest('[data-action="open-external"]');
+        if (externalLink) {
+            // external link 交由瀏覽器開新分頁，避免觸發 card 聚焦
+            event.stopPropagation();
+            return;
+        }
+
+        const issueCard = event.target.closest('.issue-card[data-issue-id]');
+        if (!issueCard || !issuesList.contains(issueCard)) return;
+
+        const issueId = Number(issueCard.dataset.issueId);
+        if (Number.isNaN(issueId)) return;
+
+        focusIssue(issueId);
+    });
+}
+
 // ===== 套用篩選 =====
 function applyFilters() {
     const city = document.getElementById('filter-city').value;
@@ -186,7 +210,7 @@ function renderIssues() {
     );
     
     container.innerHTML = sorted.map(issue => `
-        <div class="issue-card" onclick="focusIssue(${issue.id})">
+        <div class="issue-card" data-issue-id="${issue.id}">
             <div class="issue-card-header">
                 <span class="issue-card-title">${escapeHtml(issue.title)}</span>
                 <span class="issue-card-id">#${issue.id}</span>
@@ -194,6 +218,7 @@ function renderIssues() {
             <div class="issue-card-meta">
                 <span class="issue-tag status status-${getStatusClass(issue.status)}">${issue.status}</span>
                 ${issue.city ? `<span class="issue-tag city">${issue.city}</span>` : ''}
+                ${issue.url ? `<a href="${escapeHtml(issue.url)}" target="_blank" rel="noopener noreferrer" data-action="open-external" class="issue-tag city">GitHub ↗</a>` : ''}
             </div>
         </div>
     `).join('');
