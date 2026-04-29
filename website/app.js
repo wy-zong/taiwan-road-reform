@@ -70,24 +70,45 @@ function initMap() {
 
 // ===== 載入資料 =====
 async function loadData() {
-    try {
-        const response = await fetch('data.json');
-        const data = await response.json();
-        
-        allIssues = data.issues || [];
-        filteredIssues = [...allIssues];
-        
-        updateStats(data.stats);
-        updateLastUpdated(data.lastUpdated);
-        updateCityFilter();
-        renderIssues();
-        renderMarkers();
-        
-    } catch (error) {
-        console.error('載入資料失敗:', error);
-        document.getElementById('issues-list').innerHTML = 
-            '<p class="no-issues">目前沒有任何問題回報<br>成為第一個回報者吧！</p>';
+    const result = await fetchIssuesData('data.json');
+
+    if (!result.ok) {
+        console.error('載入資料失敗:', result);
+
+        if (result.type === 'network') {
+            showIssuesMessage('網路錯誤，暫時無法載入資料，請稍後再試。');
+            return;
+        }
+
+        if (result.type === 'schema') {
+            showIssuesMessage('資料格式錯誤，請通知維護者檢查資料來源。');
+            return;
+        }
     }
+
+    const data = result.payload;
+    allIssues = result.issues;
+    filteredIssues = [...allIssues];
+
+    if (result.skippedIssues.length > 0) {
+        console.warn(`已跳過 ${result.skippedIssues.length} 筆非法 issue。`);
+    }
+
+    updateStats(data.stats);
+    updateLastUpdated(data.lastUpdated);
+    updateCityFilter();
+    renderIssues();
+    renderMarkers();
+
+    if (result.type === 'empty') {
+        showIssuesMessage('目前沒有任何問題回報<br>成為第一個回報者吧！');
+    }
+}
+
+
+function showIssuesMessage(message) {
+    document.getElementById('issues-count').textContent = '0';
+    document.getElementById('issues-list').innerHTML = `<p class="no-issues">${message}</p>`;
 }
 
 // ===== 更新統計 =====
