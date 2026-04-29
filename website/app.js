@@ -35,6 +35,8 @@ const cityCoordinates = {
 };
 
 // 狀態顏色對應
+const JITTER_RADIUS = 0.05;
+
 const statusColors = {
     '待確認': '#f0ad4e',
     '已確認': '#0d6efd',
@@ -212,10 +214,10 @@ function renderMarkers() {
         if (issue.coordinates && issue.coordinates.length === 2) {
             coords = issue.coordinates;
         } else if (issue.city && cityCoordinates[issue.city]) {
-            // 加入一些隨機偏移，避免同縣市的標記重疊
+            // 對缺乏精確座標的資料使用「固定抖動」，避免同縣市標記完全重疊
             const base = cityCoordinates[issue.city];
-            const offset = () => (Math.random() - 0.5) * 0.05;
-            coords = [base[0] + offset(), base[1] + offset()];
+            const jitter = getDeterministicJitter(issue.id, issue.city);
+            coords = [base[0] + jitter[0], base[1] + jitter[1]];
         }
         
         if (!coords) return;
@@ -250,6 +252,26 @@ function renderMarkers() {
         marker.addTo(map);
         markers.push(marker);
     });
+}
+
+
+function getDeterministicJitter(issueId, city) {
+    const seed = `${city || ''}:${issueId || ''}`;
+    const latJitter = (seededRandom(seed, 'lat') - 0.5) * JITTER_RADIUS;
+    const lngJitter = (seededRandom(seed, 'lng') - 0.5) * JITTER_RADIUS;
+    return [latJitter, lngJitter];
+}
+
+function seededRandom(seed, salt = '') {
+    const input = `${seed}:${salt}`;
+    let hash = 2166136261;
+
+    for (let i = 0; i < input.length; i += 1) {
+        hash ^= input.charCodeAt(i);
+        hash = Math.imul(hash, 16777619);
+    }
+
+    return (hash >>> 0) / 4294967295;
 }
 
 // ===== 聚焦到特定 Issue =====
