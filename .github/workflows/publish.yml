@@ -1,0 +1,87 @@
+name: 正規化資料並部署網站
+
+on:
+  issues:
+    types: [opened, edited, closed, reopened, labeled, unlabeled]
+  push:
+    branches: [main]
+    paths:
+      - 'website/**'
+      - 'config/**'
+      - 'scripts/**'
+      - 'fixtures/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/ISSUE_TEMPLATE/**'
+      - '.github/workflows/publish.yml'
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: pages-publish
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      pages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Validate and test
+        run: npm run check
+
+      - name: Synchronize managed labels
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/sync-labels.mjs
+
+      - name: Normalize issue labels
+        if: github.event_name == 'issues'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/normalize-issue.mjs
+
+      - name: Generate site data
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run build:data
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: website
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -48,6 +48,13 @@ body:
     validations:
       required: true
 
+  - type: input
+    id: map_url
+    attributes:
+      label: 🗺️ 地圖位置連結（選填）
+      description: 可貼上含座標的 Google Maps 或 OpenStreetMap 分享連結，讓地圖顯示精確位置
+      placeholder: 例：https://www.google.com/maps/@25.0330,121.5654,18z
+
   - type: dropdown
     id: issue_type
     attributes:
