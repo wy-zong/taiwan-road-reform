@@ -1,0 +1,127 @@
+{
+  "schemaVersion": 1,
+  "labelPrefixes": {
+    "city": "縣市/",
+    "type": "類型/",
+    "status": "狀態/"
+  },
+  "labelColors": {
+    "city": "1d76db",
+    "type": "5319e7"
+  },
+  "defaults": {
+    "status": "待確認"
+  },
+  "statuses": [
+    {
+      "value": "待確認",
+      "label": "狀態/待確認",
+      "cssClass": "pending",
+      "color": "f0ad4e",
+      "description": "新回報，等待社群確認"
+    },
+    {
+      "value": "已確認",
+      "label": "狀態/已確認",
+      "cssClass": "confirmed",
+      "color": "0d6efd",
+      "description": "問題已由社群確認"
+    },
+    {
+      "value": "已陳情",
+      "label": "狀態/已陳情",
+      "cssClass": "petitioned",
+      "color": "6f42c1",
+      "description": "已向主管機關提出陳情"
+    },
+    {
+      "value": "處理中",
+      "label": "狀態/處理中",
+      "cssClass": "processing",
+      "color": "fd7e14",
+      "description": "主管機關正在處理"
+    },
+    {
+      "value": "已解決",
+      "label": "狀態/已解決",
+      "cssClass": "resolved",
+      "color": "198754",
+      "description": "問題已完成改善"
+    },
+    {
+      "value": "無法解決",
+      "label": "狀態/無法解決",
+      "cssClass": "unresolvable",
+      "color": "6c757d",
+      "description": "案件已結束但未能改善"
+    }
+  ],
+  "issueTypes": [
+    {
+      "formValue": "人行道缺失/破損",
+      "value": "人行道",
+      "label": "類型/人行道",
+      "description": "人行道缺失或破損"
+    },
+    {
+      "formValue": "行穿線設計不良",
+      "value": "行穿線",
+      "label": "類型/行穿線",
+      "description": "行人穿越道設計問題"
+    },
+    {
+      "formValue": "標線/標誌不清",
+      "value": "標線標誌",
+      "label": "類型/標線標誌",
+      "description": "道路標線或標誌問題"
+    },
+    {
+      "formValue": "號誌問題",
+      "value": "號誌",
+      "label": "類型/號誌",
+      "description": "交通號誌問題"
+    },
+    {
+      "formValue": "自行車道問題",
+      "value": "自行車道",
+      "label": "類型/自行車道",
+      "description": "自行車道設計或維護問題"
+    },
+    {
+      "formValue": "無障礙設施不足",
+      "value": "無障礙",
+      "label": "類型/無障礙",
+      "description": "無障礙設施不足"
+    },
+    {
+      "formValue": "其他",
+      "value": "其他",
+      "label": "類型/其他",
+      "description": "其他道路問題"
+    }
+  ],
+  "cities": [
+    { "name": "台北市", "coordinates": [25.033, 121.5654] },
+    { "name": "新北市", "coordinates": [25.012, 121.465] },
+    { "name": "桃園市", "coordinates": [24.9936, 121.301] },
+    { "name": "台中市", "coordinates": [24.1477, 120.6736] },
+    { "name": "台南市", "coordinates": [22.9998, 120.227] },
+    { "name": "高雄市", "coordinates": [22.6273, 120.3014] },
+    { "name": "基隆市", "coordinates": [25.1276, 121.7392] },
+    { "name": "新竹市", "coordinates": [24.8015, 120.9715] },
+    { "name": "新竹縣", "coordinates": [24.8387, 121.0178] },
+    { "name": "苗栗縣", "coordinates": [24.5602, 120.8214] },
+    { "name": "彰化縣", "coordinates": [24.0518, 120.5161] },
+    { "name": "南投縣", "coordinates": [23.9609, 120.9719] },
+    { "name": "雲林縣", "coordinates": [23.7092, 120.4313] },
+    { "name": "嘉義市", "coordinates": [23.4801, 120.4491] },
+    { "name": "嘉義縣", "coordinates": [23.4518, 120.2555] },
+    { "name": "屏東縣", "coordinates": [22.5519, 120.5487] },
+    { "name": "宜蘭縣", "coordinates": [24.7021, 121.7378] },
+    { "name": "花蓮縣", "coordinates": [23.9872, 121.6016] },
+    { "name": "台東縣", "coordinates": [22.7583, 121.1444] },
+    { "name": "澎湖縣", "coordinates": [23.5711, 119.5793] },
+    { "name": "金門縣", "coordinates": [24.4493, 118.3767] },
+    { "name": "連江縣", "coordinates": [26.1505, 119.9499] }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "name": "taiwan-road-reform",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "validate": "node scripts/validate-project.mjs",
+    "check": "npm run validate && npm test",
+    "build:data": "node scripts/generate-site-data.mjs",
+    "prepare:local": "node scripts/prepare-local-data.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

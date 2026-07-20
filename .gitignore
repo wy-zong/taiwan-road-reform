@@ -14,5 +14,8 @@ Thumbs.db
 # 依賴
 node_modules/
 
+# GitHub Pages 建置產物
+website/data/
+
 # 日誌
 *.log
