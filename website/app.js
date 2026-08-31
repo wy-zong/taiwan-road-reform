@@ -44,6 +44,8 @@ const statusColors = {
     '無法解決': '#6c757d'
 };
 
+const statusOrder = ['待確認', '已確認', '已陳情', '處理中', '已解決', '無法解決', '未知狀態'];
+
 // ===== 初始化 =====
 document.addEventListener('DOMContentLoaded', () => {
     initMap();
@@ -81,6 +83,8 @@ async function loadData() {
         updateStats(data.stats);
         updateLastUpdated(data.lastUpdated);
         updateCityFilter();
+        updateStatusFilter();
+        updateTypeFilter();
         renderIssues();
         renderMarkers();
         
@@ -123,13 +127,49 @@ function updateLastUpdated(timestamp) {
 function updateCityFilter() {
     const select = document.getElementById('filter-city');
     const cities = [...new Set(allIssues.map(i => i.city).filter(Boolean))];
-    
-    cities.sort();
-    cities.forEach(city => {
+    cities.sort((a, b) => a.localeCompare(b, 'zh-Hant'));
+
+    renderSelectOptions(select, cities, { includeAllLabel: '全部縣市' });
+}
+
+function updateStatusFilter() {
+    const select = document.getElementById('filter-status');
+    const statuses = [...new Set(allIssues.map(i => normalizeStatus(i.status)))];
+    const sorted = statuses.sort((a, b) => {
+        const ai = statusOrder.indexOf(a);
+        const bi = statusOrder.indexOf(b);
+        const av = ai === -1 ? Number.MAX_SAFE_INTEGER : ai;
+        const bv = bi === -1 ? Number.MAX_SAFE_INTEGER : bi;
+        if (av !== bv) return av - bv;
+        return a.localeCompare(b, 'zh-Hant');
+    });
+
+    renderSelectOptions(select, sorted, { includeAllLabel: '全部狀態' });
+}
+
+function updateTypeFilter() {
+    const select = document.getElementById('filter-type');
+    const types = [...new Set(allIssues.map(i => normalizeType(i.type)))];
+    const sorted = types.sort((a, b) => a.localeCompare(b, 'zh-Hant'));
+
+    renderSelectOptions(select, sorted, { includeAllLabel: '全部類型' });
+}
+
+function renderSelectOptions(selectEl, options, { includeAllLabel } = {}) {
+    selectEl.innerHTML = '';
+
+    if (includeAllLabel) {
+        const allOption = document.createElement('option');
+        allOption.value = '';
+        allOption.textContent = includeAllLabel;
+        selectEl.appendChild(allOption);
+    }
+
+    options.forEach(item => {
         const option = document.createElement('option');
-        option.value = city;
-        option.textContent = city;
-        select.appendChild(option);
+        option.value = item;
+        option.textContent = item;
+        selectEl.appendChild(option);
     });
 }
 
@@ -183,8 +223,8 @@ function applyFilters() {
     
     filteredIssues = allIssues.filter(issue => {
         if (city && issue.city !== city) return false;
-        if (status && issue.status !== status) return false;
-        if (type && issue.type !== type) return false;
+        if (status && normalizeStatus(issue.status) !== status) return false;
+        if (type && normalizeType(issue.type) !== type) return false;
         return true;
     });
     
@@ -216,7 +256,7 @@ function renderIssues() {
                 <span class="issue-card-id">#${issue.id}</span>
             </div>
             <div class="issue-card-meta">
-                <span class="issue-tag status status-${getStatusClass(issue.status)}">${issue.status}</span>
+                <span class="issue-tag status status-${getStatusClass(issue.status)}">${normalizeStatus(issue.status)}</span>
                 ${issue.city ? `<span class="issue-tag city">${issue.city}</span>` : ''}
                 ${issue.url ? `<a href="${escapeHtml(issue.url)}" target="_blank" rel="noopener noreferrer" data-action="open-external" class="issue-tag city">GitHub ↗</a>` : ''}
             </div>
@@ -262,9 +302,9 @@ function renderMarkers() {
                 <div class="popup-title">${escapeHtml(issue.title)}</div>
                 ${issue.location ? `<div class="popup-location">📍 ${escapeHtml(issue.location)}</div>` : ''}
                 <div class="popup-tags">
-                    <span class="issue-tag status status-${getStatusClass(issue.status)}">${issue.status}</span>
+                    <span class="issue-tag status status-${getStatusClass(issue.status)}">${normalizeStatus(issue.status)}</span>
                     ${issue.city ? `<span class="issue-tag city">${issue.city}</span>` : ''}
-                    ${issue.type ? `<span class="issue-tag city">${issue.type}</span>` : ''}
+                    <span class="issue-tag city">${normalizeType(issue.type)}</span>
                 </div>
                 <a href="${issue.url}" target="_blank" class="popup-link">在 GitHub 查看 →</a>
             </div>
@@ -309,5 +349,15 @@ function getStatusClass(status) {
         '已解決': 'resolved',
         '無法解決': 'unresolvable'
     };
-    return map[status] || 'pending';
+    return map[normalizeStatus(status)] || 'pending';
+}
+
+function normalizeStatus(status) {
+    if (!status || typeof status !== 'string') return '未知狀態';
+    return status.trim() || '未知狀態';
+}
+
+function normalizeType(type) {
+    if (!type || typeof type !== 'string') return '未知類型';
+    return type.trim() || '未知類型';
 }
